@@ -4,6 +4,15 @@ In this directory you will find a Docker Compose yaml file that will start up
 the NIMs for AlphaFold-2, MolMIM, and DiffDock. Once the NIMs are started, you
 will probably then want to take a look the example notebook in the `src` directory.
 
+#### NVIDIA AI Workbench
+
+For developers using [NVIDIA AI Workbench](https://www.nvidia.com/en-us/deep-learning-ai/solutions/data-science/workbench/) to run this blueprint, 
+
+1. Deploy the NIMs by selecting **Start** under ``Environment`` > ``Compose``.
+2. Select **Open Jupyterlab** on the top right and get started with the [notebook](../src/generative-virtual-screening.ipynb).
+
+Full quickstart instructions can be found [here](https://github.com/NVIDIA-AI-Blueprints/generative-virtual-screening/blob/main/README.md#quick-start-with-nvidia-ai-workbench). For all other users, continue below.
+
 ### Prerequisites
 
 You will need to install:
