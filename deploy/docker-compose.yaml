@@ -2,14 +2,17 @@ version: '3'
 
 services:
   alphafold:
-    image: nvcr.io/nim/deepmind/alphafold2:1.0.0
+    image: nvcr.io/nim/deepmind/alphafold2:2.1.0
     runtime: nvidia
     ports:
       - "8081:8000"
     volumes:
-      - ${ALPHAFOLD2_CACHE:-~/.cache/nim/models}:/opt/nim/.cache/
+      - type: bind
+        source: ${ALPHAFOLD2_CACHE:-~/.cache/nim}
+        target: /opt/nim/.cache/
     environment:
-      - NGC_CLI_API_KEY=${NGC_CLI_API_KEY:?Error NGC_CLI_API_KEY not set}
+      - NGC_API_KEY=${NGC_CLI_API_KEY:?Error NGC_CLI_API_KEY not set}
+      - NVWB_TRIM_PREFIX=true
 
   diffdock:
     image: nvcr.io/nim/mit/diffdock:1.2.0
@@ -17,11 +20,14 @@ services:
     ports:
       - "8082:8000"
     volumes:
-      - ${DIFFDOCK_CACHE:-~/.cache/nim}:/home/nvs/.cache/nim/models/
+      - type: bind
+        source: ${DIFFDOCK_CACHE:-~/.cache/nim}
+        target: /opt/nim/.cache/nim/models/
 
     environment:
       - NGC_CLI_API_KEY=${NGC_CLI_API_KEY:?Error NGC_CLI_API_KEY not set}
       - NVIDIA_VISIBLE_DEVICES=${DIFFDOCK_VISIBLE_DEVICES:-0}
+      - NVWB_TRIM_PREFIX=true
 
   molmim:
     image: nvcr.io/nim/nvidia/molmim:1.0.0
@@ -29,6 +35,9 @@ services:
     ports:
       - "8083:8000"
     volumes:
-      - ${MOLMIM_CACHE:-~/.cache/nim}:/home/nvs/.cache/nim/models/
+      - type: bind
+        source: ${MOLMIM_CACHE:-~/.cache/nim}
+        target: /opt/nim/.cache/nim/models/
     environment:
       - NGC_CLI_API_KEY=${NGC_CLI_API_KEY:?Error NGC_CLI_API_KEY not set}
+      - NVWB_TRIM_PREFIX=true

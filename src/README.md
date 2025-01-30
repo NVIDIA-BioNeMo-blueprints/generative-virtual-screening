@@ -12,4 +12,11 @@ instance and get going immediately!
 jupyter notebook
 ```
 
+#### NVIDIA AI Workbench
 
+For developers using [NVIDIA AI Workbench](https://www.nvidia.com/en-us/deep-learning-ai/solutions/data-science/workbench/) to run this blueprint, 
+
+1. Deploy the NIMs by selecting **Start** under ``Environment`` > ``Compose``.
+2. Select **Open Jupyterlab** on the top right and get started with the [notebook](./generative-virtual-screening.ipynb).
+
+Full quickstart instructions can be found [here](https://github.com/NVIDIA-AI-Blueprints/generative-virtual-screening/blob/main/README.md#quick-start-with-nvidia-ai-workbench). 
