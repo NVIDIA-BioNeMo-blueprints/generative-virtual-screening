@@ -65,7 +65,7 @@ spec:
               value: "True"
           volumeMounts:
             - mountPath : {{ .Values.msa.cacheFolder | quote }}
-              name: msa-pv1
+              name: {{ if .Values.persistence.enabled }}msa-pv1{{ else }}msa-cache{{ end }}
           ports:
             - name: http
               containerPort: {{ .Values.msa.containerPort }}
@@ -88,11 +88,15 @@ spec:
               path: /v1/health/ready
               port: {{ .Values.msa.containerPort }}
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml (default .Values.resources .Values.msa.resources) | nindent 12 }}
       volumes:
-        - name: msa-pv1
+        - name: {{ if .Values.persistence.enabled }}msa-pv1{{ else }}msa-cache{{ end }}
+          {{- if .Values.persistence.enabled }}
           persistentVolumeClaim:
-            claimName: gvs-shared-vol
+            claimName: {{ .Values.persistence.existingClaim | default "gvs-shared-vol" }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

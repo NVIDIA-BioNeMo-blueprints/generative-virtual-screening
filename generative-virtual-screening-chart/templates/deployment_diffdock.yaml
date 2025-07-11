@@ -59,7 +59,7 @@ spec:
               value: "DEBUG"
           volumeMounts:
           - mountPath : {{ .Values.diffdock.cacheFolder | quote }}
-            name: diffdock-pv1
+            name: {{ if .Values.persistence.enabled }}diffdock-pv1{{ else }}diffdock-cache{{ end }}
           command: ["/opt/nim/start_server.sh"]
           ports:
             - name: http
@@ -83,11 +83,15 @@ spec:
               path: /v1/health/ready
               port: {{ .Values.diffdock.containerPort }}
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml (default .Values.resources .Values.diffdock.resources) | nindent 12 }}
       volumes:
-        - name: diffdock-pv1
+        - name: {{ if .Values.persistence.enabled }}diffdock-pv1{{ else }}diffdock-cache{{ end }}
+          {{- if .Values.persistence.enabled }}
           persistentVolumeClaim:
-            claimName: gvs-shared-vol
+            claimName: {{ .Values.persistence.existingClaim | default "gvs-shared-vol" }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

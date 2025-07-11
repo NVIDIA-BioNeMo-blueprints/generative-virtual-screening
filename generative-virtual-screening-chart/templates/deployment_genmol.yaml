@@ -47,7 +47,7 @@ spec:
               value: {{ .Values.genmol.containerPort | quote }}
           volumeMounts:
           - mountPath : {{ .Values.genmol.cacheFolder | quote }}
-            name: genmol-pv1
+            name: {{ if .Values.persistence.enabled }}genmol-pv1{{ else }}genmol-cache{{ end }}
           ports:
             - name: http
               containerPort: {{ .Values.genmol.containerPort }}
@@ -70,11 +70,15 @@ spec:
               path: /v1/health/ready
               port: {{ .Values.genmol.containerPort }}
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml (default .Values.resources .Values.genmol.resources) | nindent 12 }}
       volumes:
-        - name: genmol-pv1
+        - name: {{ if .Values.persistence.enabled }}genmol-pv1{{ else }}genmol-cache{{ end }}
+          {{- if .Values.persistence.enabled }}
           persistentVolumeClaim:
-            claimName: gvs-shared-vol
+            claimName: {{ .Values.persistence.existingClaim | default "gvs-shared-vol" }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

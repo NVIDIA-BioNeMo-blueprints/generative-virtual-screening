@@ -47,7 +47,7 @@ spec:
               value: {{ .Values.openfold2.containerPort | quote }}
           volumeMounts:
           - mountPath : {{ .Values.openfold2.cacheFolder | quote }}
-            name: openfold2-pv1
+            name: {{ if .Values.persistence.enabled }}openfold2-pv1{{ else }}openfold2-cache{{ end }}
           ports:
             - name: http
               containerPort: {{ .Values.openfold2.containerPort }}
@@ -70,11 +70,15 @@ spec:
               path: /v1/health/ready
               port: {{ .Values.openfold2.containerPort }}
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml (default .Values.resources .Values.openfold2.resources) | nindent 12 }}
       volumes:
-        - name: openfold2-pv1
+        - name: {{ if .Values.persistence.enabled }}openfold2-pv1{{ else }}openfold2-cache{{ end }}
+          {{- if .Values.persistence.enabled }}
           persistentVolumeClaim:
-            claimName: gvs-shared-vol
+            claimName: {{ .Values.persistence.existingClaim | default "gvs-shared-vol" }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
