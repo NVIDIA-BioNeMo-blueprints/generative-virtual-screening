@@ -59,7 +59,7 @@ spec:
               value: "DEBUG"
           volumeMounts:
           - mountPath : {{ .Values.diffdock.cacheFolder | quote }}
-            name: {{ if .Values.persistence.enabled }}diffdock-pv1{{ else }}diffdock-cache{{ end }}
+            name: {{ if eq .Values.persistence.volume.type "emptyDir" }}diffdock-cache{{ else }}diffdock-pv1{{ end }}
           command: ["/opt/nim/start_server.sh"]
           ports:
             - name: http
@@ -85,12 +85,22 @@ spec:
           resources:
             {{- toYaml (default .Values.resources .Values.diffdock.resources) | nindent 12 }}
       volumes:
-        - name: {{ if .Values.persistence.enabled }}diffdock-pv1{{ else }}diffdock-cache{{ end }}
-          {{- if .Values.persistence.enabled }}
+        - name: {{ if eq .Values.persistence.volume.type "emptyDir" }}diffdock-cache{{ else }}diffdock-pv1{{ end }}
+          {{- if eq .Values.persistence.volume.type "pvc" }}
           persistentVolumeClaim:
-            claimName: {{ .Values.persistence.existingClaim | default "gvs-shared-vol" }}
-          {{- else }}
-          emptyDir: {}
+            claimName: {{ .Values.persistence.volume.pvc.existingClaim | default (coalesce .Values.persistence.existingClaim "gvs-shared-vol") }}
+          {{- else if eq .Values.persistence.volume.type "hostPath" }}
+          hostPath:
+            path: {{ .Values.persistence.volume.hostPath.path | default .Values.persistence.hostPath }}
+            type: {{ .Values.persistence.volume.hostPath.type | default "DirectoryOrCreate" }}
+          {{- else if eq .Values.persistence.volume.type "emptyDir" }}
+          emptyDir:
+            {{- if .Values.persistence.volume.emptyDir.sizeLimit }}
+            sizeLimit: {{ .Values.persistence.volume.emptyDir.sizeLimit }}
+            {{- end }}
+            {{- if .Values.persistence.volume.emptyDir.medium }}
+            medium: {{ .Values.persistence.volume.emptyDir.medium }}
+            {{- end }}
           {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

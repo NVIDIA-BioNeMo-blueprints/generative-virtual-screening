@@ -1,4 +1,4 @@
-{{- if and .Values.persistence.enabled (not .Values.persistence.existingClaim) }}
+{{- if and (eq .Values.persistence.volume.type "pvc") (not .Values.persistence.volume.pvc.existingClaim) (not .Values.persistence.existingClaim) }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -6,11 +6,10 @@ metadata:
   labels:
     {{- include "generative-virtual-screening-chart.labels" . | nindent 4 }}
 spec:
-  volumeName: pv1
   accessModes:
-    - {{ .Values.persistence.accessMode | quote }}
-  storageClassName: {{ .Values.persistence.storageClass }}
+    - {{ .Values.persistence.volume.pvc.accessMode | default .Values.persistence.accessMode | quote }}
+  storageClassName: {{ .Values.persistence.volume.pvc.storageClass | default .Values.persistence.storageClass }}
   resources:
     requests:
-      storage: {{ .Values.persistence.size | quote }}
+      storage: {{ .Values.persistence.volume.pvc.size | default .Values.persistence.size | quote }}
 {{- end }}

@@ -47,7 +47,7 @@ spec:
               value: {{ .Values.openfold2.containerPort | quote }}
           volumeMounts:
           - mountPath : {{ .Values.openfold2.cacheFolder | quote }}
-            name: {{ if .Values.persistence.enabled }}openfold2-pv1{{ else }}openfold2-cache{{ end }}
+            name: {{ if eq .Values.persistence.volume.type "emptyDir" }}openfold2-cache{{ else }}openfold2-pv1{{ end }}
           ports:
             - name: http
               containerPort: {{ .Values.openfold2.containerPort }}
@@ -72,12 +72,22 @@ spec:
           resources:
             {{- toYaml (default .Values.resources .Values.openfold2.resources) | nindent 12 }}
       volumes:
-        - name: {{ if .Values.persistence.enabled }}openfold2-pv1{{ else }}openfold2-cache{{ end }}
-          {{- if .Values.persistence.enabled }}
+        - name: {{ if eq .Values.persistence.volume.type "emptyDir" }}openfold2-cache{{ else }}openfold2-pv1{{ end }}
+          {{- if eq .Values.persistence.volume.type "pvc" }}
           persistentVolumeClaim:
-            claimName: {{ .Values.persistence.existingClaim | default "gvs-shared-vol" }}
-          {{- else }}
-          emptyDir: {}
+            claimName: {{ .Values.persistence.volume.pvc.existingClaim | default (coalesce .Values.persistence.existingClaim "gvs-shared-vol") }}
+          {{- else if eq .Values.persistence.volume.type "hostPath" }}
+          hostPath:
+            path: {{ .Values.persistence.volume.hostPath.path | default .Values.persistence.hostPath }}
+            type: {{ .Values.persistence.volume.hostPath.type | default "DirectoryOrCreate" }}
+          {{- else if eq .Values.persistence.volume.type "emptyDir" }}
+          emptyDir:
+            {{- if .Values.persistence.volume.emptyDir.sizeLimit }}
+            sizeLimit: {{ .Values.persistence.volume.emptyDir.sizeLimit }}
+            {{- end }}
+            {{- if .Values.persistence.volume.emptyDir.medium }}
+            medium: {{ .Values.persistence.volume.emptyDir.medium }}
+            {{- end }}
           {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
