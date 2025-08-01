@@ -39,7 +39,7 @@ spec:
               mkdir -p {{ .Values.msa.cacheFolder | quote }} && 
               chmod -R 777 {{ .Values.msa.cacheFolder | quote }}
           volumeMounts:
-            - name: msa-pv1
+            - name: {{ if eq .Values.persistence.volume.type "emptyDir" }}msa-cache{{ else }}msa-pv1{{ end }}
               mountPath: {{ .Values.msa.cacheFolder | quote }}
           securityContext:
             runAsUser: 0
