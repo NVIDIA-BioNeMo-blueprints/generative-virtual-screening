@@ -114,7 +114,31 @@ autoscaling:
   # targetMemoryUtilizationPercentage: 80
 
 persistence:
-  enabled: true
+  # Volume type configuration - choose the appropriate storage type for your environment
+  volume:
+    type: "hostPath"  # Options: "pvc", "hostPath", "emptyDir"
+    
+    # PVC configuration (when type=pvc)
+    # Use for production environments with dynamic provisioning
+    pvc:
+      existingClaim: ""
+      storageClass: standard
+      accessMode: ReadWriteMany
+      size: 1.5Ti
+    
+    # HostPath configuration (when type=hostPath) 
+    # Use for development/single-node setups - preserves cache across pod restarts
+    hostPath:
+      path: /data/nim
+      type: DirectoryOrCreate
+    
+    # EmptyDir configuration (when type=emptyDir)
+    # WARNING: Cache will be lost on pod restart, causing long model re-download times
+    emptyDir:
+      sizeLimit: ""  # Leave empty for no limit (uses available node storage)
+      medium: ""     # Use "Memory" for tmpfs (RAM-based storage)
+  
+  # Legacy configuration (deprecated, use volume.type instead)
   existingClaim: ""
   storageClass: standard
   accessMode: ReadWriteMany
